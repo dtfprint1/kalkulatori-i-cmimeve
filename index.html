@@ -1,58 +1,393 @@
 <!doctype html>
 <html lang="sq">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>dtfprint - Offer & Kalkulator</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>dtfprint — Kalkulator & oferta</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
 <style>
-  body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#071026;color:#fff}
-  .wrap{max-width:1000px;margin:40px auto;padding:28px;background:linear-gradient(180deg,#081428, #021026);border-radius:12px}
-  h1{margin:0 0 8px}
-  p{color:#cbd5e1}
-  .btn{display:inline-block;padding:10px 14px;border-radius:12px;text-decoration:none;margin-right:8px}
-  .primary{background:#06b6d4;color:#012;}
-  .outline{border:1px solid #0ea5e9;color:#e6f7fb}
-  .small{font-size:13px;color:#9fb6c9}
-  .cards{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
-  .card{background:rgba(255,255,255,0.03);padding:14px;border-radius:10px;min-width:220px}
+  :root{
+    --bg:#050617; --card:#071027; --muted:#9aa6b3; --accent:#38bdf8; --accent-2:#8b5cf6;
+    --glass: rgba(255,255,255,0.04); --glass-2: rgba(255,255,255,0.02);
+    --radius:18px; --radius-sm:10px;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;color:#e6f9ff;background:
+    radial-gradient(1200px 420px at 10% 10%, rgba(56,189,248,0.04), transparent 10%),
+    linear-gradient(180deg,#02031a 0%, #040617 40%); margin:0; padding:36px; -webkit-font-smoothing:antialiased}
+  .container{max-width:1180px;margin:0 auto}
+
+  /* HERO */
+  .hero{
+    display:grid; grid-template-columns: 1fr 420px; gap:26px; padding:28px; border-radius:20px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid rgba(120,140,160,0.06); box-shadow: 0 12px 40px rgba(2,6,23,0.7);
+    position:relative; overflow:hidden;
+    align-items:center;
+  }
+
+  .hero::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background-image: url('/mnt/data/5271e40e-f11f-485b-907b-99dc2f09a9e9.png');
+    background-position: right bottom; background-size: 520px; opacity:0.08; mix-blend-mode:soft-light;
+    filter: grayscale(40%) blur(1px);
+  }
+
+  .hero-left h1{font-size:34px;margin:0 0 8px;line-height:1.02}
+  .hero-left h1 .accent{background:linear-gradient(90deg,var(--accent),var(--accent-2)); -webkit-background-clip:text;color:transparent}
+  .muted{color:var(--muted); font-size:14px; margin-top:6px}
+
+  .hero-actions{margin-top:18px;display:flex;gap:10px;align-items:center}
+  .btn{padding:10px 14px;border-radius:999px;font-weight:600;border:1px solid transparent;cursor:pointer}
+  .btn-primary{background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:#041027; box-shadow:0 8px 30px rgba(56,189,248,0.08)}
+  .btn-outline{background:transparent;border:1px solid rgba(138,163,189,0.12);color:#e6f9ff}
+
+  .hero-right{padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent); border:1px solid rgba(255,255,255,0.02)}
+  .segment-pill{display:flex;gap:8px;margin-bottom:10px}
+  .seg-btn{padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+  .seg-btn.active{background:rgba(56,189,248,0.12); color:var(--accent)}
+
+  .small-muted{color:var(--muted); font-size:13px}
+
+  /* SECTIONS */
+  .section{margin-top:28px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.0)); padding:18px;border-radius:16px;border:1px solid rgba(255,255,255,0.02); box-shadow:0 10px 30px rgba(2,6,23,0.5)}
+
+  /* CALC */
+  .calc-grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+  .card{background:linear-gradient(180deg, var(--glass), var(--glass-2)); padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,0.03)}
+  .form-row{display:flex;gap:10px; margin-bottom:10px; align-items:center}
+  .label{font-size:12px;color:var(--muted); width:160px}
+  select,input[type=number]{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04); background:transparent;color:inherit}
+  .calc-result{font-weight:700;color:var(--accent); margin-bottom:6px}
+  .note{font-size:12px;color:var(--muted)}
+
+  .packages{display:flex; gap:12px; margin-top:12px}
+  .pkg{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03); background: linear-gradient(180deg, rgba(100,116,239,0.03), rgba(0,0,0,0.02));}
+  .pkg h4{margin:0 0 8px;font-size:14px}
+  .pkg p{font-size:13px;color:var(--muted); margin-bottom:8px}
+
+  /* CART TABLE */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.02)}
+  th{color:var(--muted);font-size:12px;text-transform:uppercase}
+  .price{white-space:nowrap;text-align:right}
+  .remove-btn{background:transparent;border:1px solid rgba(255,255,255,0.03);padding:6px;border-radius:8px;color:#ffb4b4;cursor:pointer}
+
+  /* responsive */
+  @media (max-width:1000px){
+    .hero{grid-template-columns:1fr}
+    .calc-grid{grid-template-columns:1fr}
+    .hero::after{display:none}
+  }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>dtfprint — Kalkulator & Cmimet</h1>
-    <p class="small">Kliko “Hap kalkulatorin” për të nisur ofertën (do të zgjedhësh më pas Klient normal ose Rishitës).</p>
+  <div class="container">
 
-    <p style="margin-top:18px">
-      <!-- hap calculator pa prefille -->
-      <a class="btn primary" href="calculator.html">Hap kalkulatorin</a>
+    <!-- HERO -->
+    <header class="hero" role="banner">
+      <div class="hero-left">
+        <span style="display:inline-flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span style="width:12px;height:12px;border-radius:999px;background:linear-gradient(180deg,#34d399,#059669);box-shadow:0 6px 18px rgba(16,185,129,0.12)"></span>
+          <strong style="color:var(--muted);font-size:13px">Segmentim profesional | klientëve</strong>
+        </span>
 
-      <!-- hap calculator dhe i kalon parameter per segment (reseller) -->
-      <a class="btn outline" href="calculator.html?segment=reseller">Hap si Rishitës</a>
+        <h1>Produkte të personalizuara për <span class="accent">klientë normal</span> & <span class="accent">rishitës</span></h1>
+        <p class="muted">Ndarje e qartë midis porosive personale dhe atyre me shumicë — çmimet ndryshojnë sipas sasisë, madhësisë dhe numrit të stampave.</p>
 
-      <!-- link direkt per cmimet -->
-      <a class="btn outline" href="#cmimet">Shiko listën e cmimeve</a>
-    </p>
-
-    <div class="cards">
-      <div class="card">
-        <strong>Si funksionon</strong>
-        <p class="small">Fillo me "Hap kalkulatorin", zgjidh segmentin, shto produkte dhe shumë > totali llogaritet me zbritjet e përcaktuara.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="location.href='#kalkulatori'">Hap kalkulatorin</button>
+          <a class="btn btn-outline" href="#cmimet">Shiko listën e cmimeve</a>
+        </div>
       </div>
-      <div class="card">
-        <strong>Paketat</strong>
-        <p class="small">Mund të zgjidhni edhe "Paketa e gatshme" brenda kalkulatorit.</p>
-      </div>
-    </div>
 
-    <section id="cmimet" style="margin-top:24px">
-      <h3>Lista e cmimeve (shembull)</h3>
-      <ul>
-        <li>HOODIE 300 GSM — 1,900 Lekë</li>
-        <li>PREMIUM 180 — 700 Lekë</li>
-        <li>NATURELLA 120 totebag — 250 Lekë</li>
-        <!-- përditëso sipas dtfprint.al -->
-      </ul>
+      <aside class="hero-right">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <small class="small-muted">Segmenti aktiv</small>
+          <small class="small-muted">dtfprint — çmime orientuese</small>
+        </div>
+
+        <div class="segment-pill">
+          <div id="segNormal" class="seg-btn active" onclick="setSegment('normal')">Klient normal</div>
+          <div id="segReseller" class="seg-btn" onclick="setSegment('reseller')">Rishitës</div>
+        </div>
+
+        <div style="margin-top:10px">
+          <div style="display:flex;justify-content:space-between">
+            <small class="small-muted">Sasia</small>
+            <strong>1 — 50+ copë</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <small class="small-muted">Shtesë / stampë</small>
+            <strong>200 Lekë / copë</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px">
+            <small class="small-muted">Zbritje</small>
+            <small class="small-muted">sipas sasisë & segmentit</small>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;justify-content:flex-end">
+          <button class="btn btn-primary" onclick="location.href='#kalkulatori'">Shko te kalkulatori</button>
+        </div>
+      </aside>
+    </header>
+
+    <!-- CALCULATOR + PACKAGES -->
+    <section id="kalkulatori" class="section">
+      <div class="calc-grid">
+        <!-- LEFT: calculator + cart -->
+        <div class="card">
+          <h3 style="margin:0 0 8px">Kalkulator oferte (live)</h3>
+          <p class="note">Zgjidh produktin, vendos sasinë dhe numrin e stampave. Pastaj shtoje në ofertë.</p>
+
+          <div style="margin-top:12px">
+            <div class="form-row"><div class="label">Produkti</div>
+              <select id="productSelect"></select>
+            </div>
+
+            <div class="form-row"><div class="label">Sasia (copë)</div>
+              <input id="quantityInput" type="number" min="1" value="1" />
+            </div>
+
+            <div class="form-row"><div class="label">Nr. stampave / copë</div>
+              <input id="printsInput" type="number" min="1" value="1" />
+            </div>
+
+            <div class="form-row"><div class="label">Shtesa stampë</div>
+              <input type="text" value="200 Lekë / stampë shtesë (fiks)" disabled style="flex:1;padding:10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted)">
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+              <div>
+                <div class="calc-result" id="unitPriceDisplay">Çmimi për copë: —</div>
+                <div class="note" id="totalPriceDisplay">Totali: —</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-outline" onclick="addCurrentToCart()">Shto këtë produkt në ofertë</button>
+                <button class="btn btn-outline" onclick="clearCart()">Pastro ofertën</button>
+              </div>
+            </div>
+
+            <p class="note" style="margin-top:10px">* Zbritjet nga sasia: 1–5 (0%), 6–10 (−5%), 11–20 (−10%), 21–50 (−15%), 51+ (−20%). Rishitës: −10% ekstra.</p>
+          </div>
+
+          <!-- cart / offer -->
+          <div id="packageBreakdownContainer" style="margin-top:16px;display:none">
+            <div style="margin-bottom:8px"><strong id="packageTitle">Oferta aktuale</strong></div>
+            <div style="overflow:auto; max-height:260px" class="card">
+              <table aria-live="polite">
+                <thead><tr><th>Produkti</th><th>Sasia</th><th>Stampat</th><th class="price">Çmim / copë</th><th class="price">Totali</th><th></th></tr></thead>
+                <tbody id="packageBreakdownBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: price list + packages -->
+        <aside>
+          <div class="card" style="margin-bottom:12px">
+            <h4 style="margin:0 0 8px">Paketa të gatshme</h4>
+            <div class="packages">
+              <div class="pkg">
+                <h4>Starter Pack Personal</h4>
+                <p>1 HOODIE 300 GSM · 1 PREMIUM 180 · 1 NATURELLA 120</p>
+                <button class="btn btn-primary" onclick="applyPreset('starter-personal')">Shto në ofertë</button>
+              </div>
+              <div class="pkg">
+                <h4>Brand Starter</h4>
+                <p>5 HOODIE · 10 PREMIUM · 20 CAMPUS MAT</p>
+                <button class="btn btn-outline" onclick="applyPreset('brand-pack')">Kërko ofertë</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4 style="margin:0 0 8px">Lista e cmimeve (bazë)</h4>
+            <div style="display:grid;gap:8px">
+              <div style="display:flex;justify-content:space-between"><span class="small-muted">HOODIE 300 GSM</span><strong>1,900 Lekë</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="small-muted">PREMIUM 180</span><strong>700 Lekë</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="small-muted">NATURELLA 120</span><strong>250 Lekë</strong></div>
+              <div style="display:flex;justify-content:space-between"><span class="small-muted">CAMPUS MAT</span><strong>450 Lekë</strong></div>
+              <div style="margin-top:8px" class="note">Përditëso çmimet në konfigurim (JS) sipas pdf dtfprint.al</div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </section>
+
+    <!-- FOOTER NOTE -->
+    <footer style="margin-top:24px;color:var(--muted);font-size:13px;text-align:center">
+      © dtfprint — shembull interaktiv kalkulatori. Për ndryshime të çmimeve/produktet: shiko seksionin products (JS).
+    </footer>
   </div>
+
+<script>
+/* ================== KONFIGURIM ================== */
+/* Ndrysho këtu produktet & çmimet sipas dtfprint.al */
+const EXTRA_PRINT_PRICE = 200;
+const quantityTiers = [
+  {max:5, multiplier:1.0, label:"1–5"},
+  {max:10, multiplier:0.95, label:"6–10"},
+  {max:20, multiplier:0.90, label:"11–20"},
+  {max:50, multiplier:0.85, label:"21–50"},
+  {max:Infinity, multiplier:0.80, label:"51+"}
+];
+const resellerMultiplier = 0.90;
+
+const products = [
+  {id:"hoodie300", name:"HOODIE – Hoodie 300 GSM", price:1900},
+  {id:"premium180", name:"PREMIUM 180 – Bluze 180 GSM", price:700},
+  {id:"naturella", name:"NATURELLA 120 – Totebag", price:250},
+  {id:"campusMat", name:"CAMPUS MAT – Mouse pad", price:450}
+];
+
+const packagePresets = {
+  "starter-personal": {
+    name: "Starter Pack Personal",
+    items: [
+      {productId:"hoodie300", qty:1, prints:2},
+      {productId:"premium180", qty:1, prints:1},
+      {productId:"naturella", qty:1, prints:1}
+    ]
+  },
+  "brand-pack": {
+    name:"Brand Starter Pack",
+    items:[
+      {productId:"hoodie300", qty:5, prints:2},
+      {productId:"premium180", qty:10, prints:1},
+      {productId:"campusMat", qty:20, prints:1}
+    ]
+  }
+};
+
+/* ================== LOGJIKA ================== */
+let currentSegment = "normal"; // or 'reseller'
+let cartItems = [];
+
+function formatALL(v){
+  return new Intl.NumberFormat('sq-AL',{style:'currency',currency:'ALL',maximumFractionDigits:0}).format(v);
+}
+
+function getTier(q){
+  for(const t of quantityTiers) if(q<=t.max) return t;
+  return quantityTiers[quantityTiers.length-1];
+}
+
+function findProduct(id){ return products.find(p=>p.id===id) || null; }
+
+function computeLine(productId, qty, prints){
+  const p = findProduct(productId); if(!p) return null;
+  qty = Math.max(1, Math.floor(qty||1));
+  prints = Math.max(1, Math.floor(prints||1));
+  const extraPrints = Math.max(prints-1,0);
+  const extraPerUnit = extraPrints * EXTRA_PRINT_PRICE;
+  const baseUnit = p.price;
+  const unitWithPrints = baseUnit + extraPerUnit;
+  const tier = getTier(qty);
+  const segMul = currentSegment === 'reseller' ? resellerMultiplier : 1;
+  const unitAfter = Math.round(unitWithPrints * tier.multiplier * segMul);
+  const total = unitAfter * qty;
+  return {
+    product: p, qty, prints, baseUnit, extraPrints, extraPerUnit, unitWithPrints, tier, finalUnit: unitAfter, total
+  };
+}
+
+/* ================== UI POPULATION ================== */
+function populateProductSelect(){
+  const sel = document.getElementById('productSelect');
+  sel.innerHTML = '';
+  products.forEach(p=>{
+    const opt = document.createElement('option'); opt.value = p.id; opt.textContent = `${p.name} — ${formatALL(p.price)}`;
+    sel.appendChild(opt);
+  });
+}
+
+/* kalkulo single dhe shfaq */
+function calculateSingle(){
+  const sel = document.getElementById('productSelect');
+  const qty = parseInt(document.getElementById('quantityInput').value||1,10);
+  const prints = parseInt(document.getElementById('printsInput').value||1,10);
+  const line = computeLine(sel.value, qty, prints);
+  document.getElementById('unitPriceDisplay').textContent = 'Çmimi për copë: ' + formatALL(line.finalUnit);
+  document.getElementById('totalPriceDisplay').textContent = 'Totali për ' + line.qty + ' copë: ' + formatALL(line.total);
+}
+
+/* CART multi */
+function refreshCart(){
+  const container = document.getElementById('packageBreakdownContainer');
+  const body = document.getElementById('packageBreakdownBody');
+  if(cartItems.length===0){ container.style.display='none'; calculateSingle(); return; }
+  container.style.display='block';
+  body.innerHTML = '';
+  let grand = 0; let totalQty = 0;
+  cartItems.forEach((it, idx)=>{
+    const line = computeLine(it.productId, it.qty, it.prints);
+    if(!line) return;
+    grand += line.total; totalQty += line.qty;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="font-weight:600">${line.product.name}</td>
+      <td>${line.qty}</td><td>${line.prints}</td>
+      <td class="price">${formatALL(line.finalUnit)}</td>
+      <td class="price">${formatALL(line.total)}</td>
+      <td><button class="remove-btn" onclick="removeCartItem(${idx})">Hiq</button></td>`;
+    body.appendChild(tr);
+  });
+  const totalRow = document.createElement('tr');
+  totalRow.innerHTML = `<td colspan="4" style="text-align:right;font-weight:700">Totali i ofertës</td><td class="price" style="font-weight:700">${formatALL(grand)}</td><td></td>`;
+  body.appendChild(totalRow);
+  document.getElementById('packageTitle').textContent = cartItems.length>1 ? 'Oferta aktuale (multi-produkt)' : 'Oferta aktuale';
+  document.getElementById('unitPriceDisplay').textContent = 'Çmimi mesatar për copë (ofertë): ' + formatALL(Math.round(grand / Math.max(1,totalQty)));
+  document.getElementById('totalPriceDisplay').textContent = `Totali i ofertës për ${totalQty} copë: ${formatALL(grand)}`;
+}
+
+/* add / clear / remove */
+function addCurrentToCart(){
+  const sel = document.getElementById('productSelect').value;
+  const qty = Math.max(1, parseInt(document.getElementById('quantityInput').value||1,10));
+  const prints = Math.max(1, parseInt(document.getElementById('printsInput').value||1,10));
+  cartItems.push({productId:sel, qty, prints});
+  refreshCart();
+}
+function clearCart(){ cartItems = []; refreshCart(); }
+function removeCartItem(i){ cartItems.splice(i,1); refreshCart(); }
+
+/* preset packages */
+function applyPreset(id){
+  const preset = packagePresets[id];
+  if(!preset) return;
+  cartItems = preset.items.map(it=>({...it}));
+  refreshCart();
+}
+
+/* set segment */
+function setSegment(seg){
+  currentSegment = seg==='reseller' ? 'reseller' : 'normal';
+  document.getElementById('segNormal').classList.toggle('active', currentSegment==='normal');
+  document.getElementById('segReseller').classList.toggle('active', currentSegment==='reseller');
+  if(cartItems.length) refreshCart(); else calculateSingle();
+}
+
+/* init */
+document.addEventListener('DOMContentLoaded', ()=>{
+  populateProductSelect();
+  // default calc
+  calculateSingle();
+  // events
+  document.getElementById('productSelect').addEventListener('change', ()=>{ if(!cartItems.length) calculateSingle(); });
+  document.getElementById('quantityInput').addEventListener('input', ()=>{ if(!cartItems.length) calculateSingle(); });
+  document.getElementById('printsInput').addEventListener('input', ()=>{ if(!cartItems.length) calculateSingle(); });
+
+  // expose applyPreset for buttons
+  window.applyPreset = applyPreset;
+  window.setSegment = setSegment;
+  window.addCurrentToCart = addCurrentToCart;
+  window.clearCart = clearCart;
+  window.removeCartItem = removeCartItem;
+});
+</script>
 </body>
 </html>
