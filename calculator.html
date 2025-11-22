@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="sq">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kalkulator – dtfprint</title>
+<style>
+  body{font-family:Inter,Arial;background:#051226;color:#e6f7fb;margin:0;padding:22px}
+  .box{max-width:1100px;margin:0 auto;background:linear-gradient(180deg,#021026,#00121a);padding:18px;border-radius:12px}
+  .seg{display:flex;gap:10px;margin-bottom:12px}
+  .seg button{padding:8px 12px;border-radius:999px;border:0;cursor:pointer}
+  .seg button.active{background:#06b6d4;color:#012}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .field{flex:1;min-width:200px}
+  select,input{width:100%;padding:8px;border-radius:8px;border:1px solid #123}
+  .btn{padding:8px 12px;border-radius:8px;background:#0ea5e9;color:#012;border:0;cursor:pointer}
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.04)}
+  .danger{background:#7f1d1d;color:#fee2e2;padding:6px;border-radius:8px;border:0}
+</style>
+</head>
+<body>
+  <div class="box">
+    <h2>Kalkulator oferte</h2>
+    <p class="small">Zgjidh segmentin më poshtë për të vazhduar:</p>
+
+    <div class="seg">
+      <button id="btnNormal">Klient normal</button>
+      <button id="btnReseller">Rishitës</button>
+    </div>
+
+    <div style="margin-top:10px">
+      <div class="row">
+        <div class="field">
+          <label>Produkti</label>
+          <select id="productSelect"></select>
+        </div>
+        <div class="field">
+          <label>Sasia</label>
+          <input id="qty" type="number" min="1" value="1">
+        </div>
+        <div class="field">
+          <label>Nr. stampave</label>
+          <input id="prints" type="number" min="1" value="1">
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <button class="btn" id="addBtn">Shto në ofertë</button>
+        <button class="danger" id="clearBtn">Pastro ofertën</button>
+      </div>
+
+      <div id="cartWrap" style="display:none">
+        <h3>Oferta aktuale</h3>
+        <table>
+          <thead><tr><th>Produkti</th><th>Sasia</th><th>Stampat</th><th>Çmimi/cp</th><th>Totali</th><th></th></tr></thead>
+          <tbody id="cartBody"></tbody>
+        </table>
+        <p id="grandTotal" style="font-weight:600;margin-top:8px"></p>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* KODI i shkurtuar i kalkulimit: përdor të njëjtat rregulla si më parë */
+const EXTRA_PRINT_PRICE = 200;
+const quantityTiers = [
+  {max:5,mult:1},{max:10,mult:0.95},{max:20,mult:0.9},{max:50,mult:0.85},{max:Infinity,mult:0.8}
+];
+const resellerMul = 0.9;
+const products = [
+  {id:"hoodie300",name:"HOODIE – Hoodie 300 GSM",price:1900},
+  {id:"premium180",name:"PREMIUM 180 – Bluze 180 GSM",price:700},
+  {id:"naturella",name:"NATURELLA 120 – Totebag",price:250},
+  {id:"campusMat",name:"CAMPUS MAT – Mouse pad",price:450}
+];
+
+let currentSegment = 'normal';
+let cart = [];
+
+function qParam(name){
+  const u = new URL(location.href);
+  return u.searchParams.get(name);
+}
+
+function getTier(q){
+  for (const t of quantityTiers) if(q<=t.max) return t;
+  return quantityTiers[quantityTiers.length-1];
+}
+
+function findProd(id){ return products.find(p=>p.id===id) }
+
+function computeLine(pid,qty,prints){
+  const p=findProd(pid); if(!p) return null;
+  const extra = Math.max(prints-1,0);
+  const base = p.price;
+  const unitWithPrint = base + extra*EXTRA_PRINT_PRICE;
+  const tier = getTier(qty);
+  const segment = currentSegment==='reseller'?resellerMul:1;
+  const finalUnit = Math.round(unitWithPrint * tier.mult * segment);
+  const total = finalUnit * qty;
+  return {p,qty,prints,finalUnit,total};
+}
+
+/* populate select */
+const sel = document.getElementById('productSelect');
+products.forEach(x=>{
+  const opt=document.createElement('option'); opt.value=x.id; opt.textContent=`${x.name} – ${x.price} Lekë`; sel.appendChild(opt);
+});
+
+/* buttons */
+const btnNormal = document.getElementById('btnNormal');
+const btnReseller = document.getElementById('btnReseller');
+btnNormal.onclick = ()=>{ currentSegment='normal'; renderSeg(); renderCart() };
+btnReseller.onclick = ()=>{ currentSegment='reseller'; renderSeg(); renderCart() };
+
+function renderSeg(){
+  btnNormal.classList.toggle('active', currentSegment==='normal');
+  btnReseller.classList.toggle('active', currentSegment==='reseller');
+}
+
+/* prefill segment from query */
+const s = qParam('segment');
+if(s==='reseller') currentSegment='reseller';
+renderSeg();
+
+/* cart UI */
+const cartWrap = document.getElementById('cartWrap');
+const cartBody = document.getElementById('cartBody');
+const grandTotalEl = document.getElementById('grandTotal');
+
+document.getElementById('addBtn').onclick = ()=>{
+  const pid = sel.value;
+  const qty = Math.max(1, parseInt(document.getElementById('qty').value||1));
+  const prints = Math.max(1, parseInt(document.getElementById('prints').value||1));
+  cart.push({productId:pid,qty,prints});
+  renderCart();
+}
+
+document.getElementById('clearBtn').onclick = ()=>{
+  cart = []; renderCart();
+}
+
+function removeFromCart(i){ cart.splice(i,1); renderCart(); }
+
+function renderCart(){
+  if(cart.length===0){ cartWrap.style.display='none'; return; }
+  cartWrap.style.display='block';
+  cartBody.innerHTML='';
+  let grand=0; let totalQty=0;
+  cart.forEach((item,i)=>{
+    const line = computeLine(item.productId, item.qty, item.prints);
+    if(!line) return;
+    grand += line.total; totalQty+=line.qty;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${line.p.name}</td><td>${line.qty}</td><td>${line.prints}</td><td>${line.finalUnit} Lekë</td><td>${line.total} Lekë</td><td><button onclick="removeFromCart(${i})">Hiq</button></td>`;
+    cartBody.appendChild(tr);
+  });
+  grandTotalEl.textContent = `Totali i ofertës (për ${cart.reduce((s,i)=>s+i.qty,0)} copë): ${grand} Lekë`;
+}
+
+/* ekspoze funksione globale për buton remove */
+window.removeFromCart = removeFromCart;
+
+</script>
+</body>
+</html>

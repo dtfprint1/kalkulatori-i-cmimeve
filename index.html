@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>dtfprint - Offer & Kalkulator</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#071026;color:#fff}
+  .wrap{max-width:1000px;margin:40px auto;padding:28px;background:linear-gradient(180deg,#081428, #021026);border-radius:12px}
+  h1{margin:0 0 8px}
+  p{color:#cbd5e1}
+  .btn{display:inline-block;padding:10px 14px;border-radius:12px;text-decoration:none;margin-right:8px}
+  .primary{background:#06b6d4;color:#012;}
+  .outline{border:1px solid #0ea5e9;color:#e6f7fb}
+  .small{font-size:13px;color:#9fb6c9}
+  .cards{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+  .card{background:rgba(255,255,255,0.03);padding:14px;border-radius:10px;min-width:220px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>dtfprint — Kalkulator & Cmimet</h1>
+    <p class="small">Kliko “Hap kalkulatorin” për të nisur ofertën (do të zgjedhësh më pas Klient normal ose Rishitës).</p>
+
+    <p style="margin-top:18px">
+      <!-- hap calculator pa prefille -->
+      <a class="btn primary" href="calculator.html">Hap kalkulatorin</a>
+
+      <!-- hap calculator dhe i kalon parameter per segment (reseller) -->
+      <a class="btn outline" href="calculator.html?segment=reseller">Hap si Rishitës</a>
+
+      <!-- link direkt per cmimet -->
+      <a class="btn outline" href="#cmimet">Shiko listën e cmimeve</a>
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <strong>Si funksionon</strong>
+        <p class="small">Fillo me "Hap kalkulatorin", zgjidh segmentin, shto produkte dhe shumë > totali llogaritet me zbritjet e përcaktuara.</p>
+      </div>
+      <div class="card">
+        <strong>Paketat</strong>
+        <p class="small">Mund të zgjidhni edhe "Paketa e gatshme" brenda kalkulatorit.</p>
+      </div>
+    </div>
+
+    <section id="cmimet" style="margin-top:24px">
+      <h3>Lista e cmimeve (shembull)</h3>
+      <ul>
+        <li>HOODIE 300 GSM — 1,900 Lekë</li>
+        <li>PREMIUM 180 — 700 Lekë</li>
+        <li>NATURELLA 120 totebag — 250 Lekë</li>
+        <!-- përditëso sipas dtfprint.al -->
+      </ul>
+    </section>
+  </div>
+</body>
+</html>
