@@ -626,24 +626,6 @@
       background: rgba(15, 23, 42, 0.65);
     }
 
-    /* Link i emrit të produktit në listën e çmimeve */
-    .product-link {
-      background: none;
-      border: none;
-      padding: 0;
-      margin: 0;
-      color: inherit;
-      font: inherit;
-      cursor: pointer;
-      text-align: left;
-      width: 100%;
-    }
-
-    .product-link:hover {
-      color: var(--accent-strong);
-      text-decoration: underline;
-    }
-
     /* ===== Kalkulator ===== */
 
     .calc-card {
@@ -664,6 +646,43 @@
       font-size: 11px;
       color: var(--text-muted);
       margin-bottom: 10px;
+    }
+
+    .calc-search-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+      align-items: flex-start;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .search-results {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .search-pill {
+      font-size: 10px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+    }
+
+    .search-pill:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent-strong);
     }
 
     .calc-form {
@@ -754,6 +773,15 @@
       font-size: 10px;
       padding: 2px 8px;
       cursor: pointer;
+    }
+
+    .product-link {
+      color: var(--accent-strong);
+      text-decoration: none;
+    }
+
+    .product-link:hover {
+      text-decoration: underline;
     }
 
     /* ================= RESPONSIVE ================= */
@@ -930,6 +958,15 @@
           Segmentin (Klient normal / Rishitës) e zgjedh lart në seksionin “Segmenti aktiv”.
         </p>
 
+        <!-- Search -->
+        <div class="calc-search-row">
+          <div class="calc-field search-input">
+            <label class="calc-label" for="productSearchInput">Kërko produkt (p.sh. “bluze”, “çadër”)</label>
+            <input id="productSearchInput" type="text" class="calc-input" placeholder="Shkruaj emrin ose kategorinë..." />
+            <div id="productSearchResults" class="search-results"></div>
+          </div>
+        </div>
+
         <div class="calc-form">
           <div class="calc-field">
             <label class="calc-label" for="productSelect">Produkti</label>
@@ -968,6 +1005,9 @@
               </button>
               <button class="btn btn-outline btn-xs" onclick="clearCart();">
                 Pastro ofertën
+              </button>
+              <button class="btn btn-primary btn-xs" onclick="sendToWhatsApp();">
+                Dërgo ofertën në WhatsApp
               </button>
             </div>
           </div>
@@ -1227,7 +1267,7 @@
 
     const resellerMultiplier = 0.90; // −10% për rishitës
 
-    // PRODUKTET – me URL direkte kur ekziston faqe specifike te dtfprint.al
+    // Shto URL per produktet qe kane faqe specifike ne dtfprint.al
     const products = [
       {
         id: "premium180",
@@ -1241,7 +1281,7 @@
         name: "AZZURO POLO – Bluze polo 180 GSM",
         category: "Tekstil",
         price: 900,
-        url: null
+        url: null // shtoje ketu linkun direkt nese krijon faqe produkti
       },
       {
         id: "gator",
@@ -1255,7 +1295,7 @@
         name: "SPRING – Sweatshirt 300 GSM",
         category: "Tekstil",
         price: 1700,
-        url: "https://www.dtfprint.al/bluze-spring-klasike-e-bute-dhe-e-pershtatshme-per-personalizim"
+        url: null
       },
       {
         id: "hoodie300",
@@ -1269,14 +1309,14 @@
         name: "CAMPUS MAT – Mouse Pad",
         category: "Promo",
         price: 450,
-        url: null
+        url: null // aktualisht vetem ne listen e cmimeve
       },
       {
         id: "lager",
         name: "LAGER – Thermal Bag",
         category: "Çanta",
         price: 350,
-        url: null
+        url: "https://www.dtfprint.al/cante-ftohese-lager-cante-termike-promocionale-me-izolim"
       },
       {
         id: "naturella",
@@ -1290,7 +1330,7 @@
         name: "DOCUMENTO – Çantë dokumentash",
         category: "Çanta",
         price: 300,
-        url: null
+        url: "https://www.dtfprint.al/cante-dokumentash-documento-cante-konferencash-me-dizajn-profesional"
       },
       {
         id: "camposPlus",
@@ -1311,7 +1351,7 @@
         name: "ROSSI – Çadër",
         category: "Çadra",
         price: 850,
-        url: "https://www.dtfprint.al/cader-e-personalizuar-rossi-cader-promocionale-me-hapje-automatike"
+        url: null
       }
     ];
 
@@ -1371,23 +1411,6 @@
       return products.find(p => p.id === id) || null;
     }
 
-    // HAP FAQEN E PRODUKTIT TEK DTFPRINT.AL
-    function openProductPage(productId) {
-      const p = findProduct(productId);
-      if (!p) return;
-
-      let url = p.url;
-
-      // Nëse nuk kemi URL direkte, bëj search te dtfprint.al për emrin e produktit
-      if (!url) {
-        const nameForSearch = p.name.split("–")[0].trim();
-        const query = encodeURIComponent(nameForSearch);
-        url = "https://www.dtfprint.al/?s=" + query;
-      }
-
-      window.open(url, "_blank");
-    }
-
     function computeLine(productId, qty, prints) {
       const p = findProduct(productId);
       if (!p) return null;
@@ -1430,12 +1453,23 @@
 
         const nameTd = document.createElement("td");
         nameTd.className = "name-cell";
-        const btn = document.createElement("button");
-        btn.className = "product-link";
-        btn.type = "button";
-        btn.textContent = p.name;
-        btn.onclick = () => openProductPage(p.id);
-        nameTd.appendChild(btn);
+
+        const link = document.createElement("a");
+        link.textContent = p.name;
+        link.className = "product-link";
+
+        if (p.url) {
+          link.href = p.url;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+        } else {
+          // fallback: hap faqen e produkteve
+          link.href = "https://dtfprint.al/produktet";
+          link.target = "_blank";
+          link.title = "Për momentin ky produkt nuk ka faqe të dedikuar – hapet lista e produkteve.";
+        }
+
+        nameTd.appendChild(link);
         tr.appendChild(nameTd);
 
         const catTd = document.createElement("td");
@@ -1461,6 +1495,41 @@
         opt.value = p.id;
         opt.textContent = `${p.name} – ${formatALL(p.price)}`;
         select.appendChild(opt);
+      });
+    }
+
+    // ------------------- SEARCH -------------------
+
+    function runProductSearch(query) {
+      const container = document.getElementById("productSearchResults");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const q = (query || "").trim().toLowerCase();
+      if (!q) return;
+
+      const matches = products
+        .filter(p =>
+          p.name.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q)
+        )
+        .slice(0, 8);
+
+      matches.forEach(p => {
+        const pill = document.createElement("button");
+        pill.type = "button";
+        pill.className = "search-pill";
+        pill.textContent = p.name;
+        pill.onclick = () => {
+          const select = document.getElementById("productSelect");
+          if (select) {
+            select.value = p.id;
+          }
+          if (cartItems.length === 0) {
+            calculateSingleTotal();
+          }
+        };
+        container.appendChild(pill);
       });
     }
 
@@ -1558,12 +1627,19 @@
 
         const nameTd = document.createElement("td");
         nameTd.className = "name-cell";
-        const btn = document.createElement("button");
-        btn.className = "product-link";
-        btn.type = "button";
-        btn.textContent = line.product.name;
-        btn.onclick = () => openProductPage(line.product.id);
-        nameTd.appendChild(btn);
+
+        const link = document.createElement("a");
+        link.textContent = line.product.name;
+        link.className = "product-link";
+        if (line.product.url) {
+          link.href = line.product.url;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+        } else {
+          link.href = "https://dtfprint.al/produktet";
+          link.target = "_blank";
+        }
+        nameTd.appendChild(link);
         tr.appendChild(nameTd);
 
         const qtyTd = document.createElement("td");
@@ -1585,11 +1661,11 @@
         tr.appendChild(totalTd);
 
         const removeTd = document.createElement("td");
-        const btnRemove = document.createElement("button");
-        btnRemove.className = "btn-mini-danger";
-        btnRemove.textContent = "Hiq";
-        btnRemove.onclick = () => removeCartItem(index);
-        removeTd.appendChild(btnRemove);
+        const btn = document.createElement("button");
+        btn.className = "btn-mini-danger";
+        btn.textContent = "Hiq";
+        btn.onclick = () => removeCartItem(index);
+        removeTd.appendChild(btn);
         tr.appendChild(removeTd);
 
         body.appendChild(tr);
@@ -1723,13 +1799,71 @@
       cartItems = preset.items.map(i => ({ ...i }));
       cartLabel = "Paketa e zgjedhur: " + preset.name;
 
-      // vendos si default rreshtin e parë te inputet
       const first = preset.items[0];
       productSelect.value = first.productId;
       quantityInput.value = first.qty;
       printsInput.value = first.prints;
 
       calculateCartTotal();
+    }
+
+    // ------------------- WHATSAPP -------------------
+
+    function buildCartSummary() {
+      const lines = [];
+      const segmentLabel = currentSegment === "reseller" ? "Rishitës" : "Klient normal";
+
+      if (cartItems.length === 0) {
+        const select = document.getElementById("productSelect");
+        const quantityInput = document.getElementById("quantityInput");
+        const printsInput = document.getElementById("printsInput");
+        if (!select || !quantityInput || !printsInput) return null;
+
+        const line = computeLine(
+          select.value,
+          parseInt(quantityInput.value, 10),
+          parseInt(printsInput.value, 10)
+        );
+        if (!line) return null;
+
+        lines.push("Nga dtfprint.al – kërkesë oferte");
+        lines.push("");
+        lines.push("Produkte:");
+        lines.push(
+          `- ${line.product.name} | Sasia: ${line.qty} | Stampat: ${line.prints} | Çmimi / copë: ${line.finalUnit} Lekë | Totali: ${line.total} Lekë`
+        );
+        lines.push("");
+        lines.push(`Totali i përgjithshëm: ${line.total} Lekë`);
+      } else {
+        let grandTotal = 0;
+        lines.push("Nga dtfprint.al – kërkesë oferte");
+        lines.push("");
+        lines.push("Produkte në ofertë:");
+        cartItems.forEach(item => {
+          const line = computeLine(item.productId, item.qty, item.prints);
+          if (!line) return;
+          grandTotal += line.total;
+          lines.push(
+            `- ${line.product.name} | Sasia: ${line.qty} | Stampat: ${line.prints} | Çmimi / copë: ${line.finalUnit} Lekë | Totali: ${line.total} Lekë`
+          );
+        });
+        lines.push("");
+        lines.push(`Totali i përgjithshëm: ${grandTotal} Lekë`);
+      }
+
+      lines.push("");
+      lines.push(`Segmenti: ${segmentLabel}`);
+      lines.push("Burimi: dtfprint.al – kalkulatori i cmimeve");
+
+      return lines.join("\n");
+    }
+
+    function sendToWhatsApp() {
+      const summary = buildCartSummary();
+      if (!summary) return;
+      const phone = "355693789100"; // pa +
+      const url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(summary);
+      window.open(url, "_blank");
     }
 
     // bëji funksionet accesible nga HTML
@@ -1741,7 +1875,7 @@
     window.applyPreset = applyPreset;
     window.addCurrentToCart = addCurrentToCart;
     window.clearCart = clearCart;
-    window.openProductPage = openProductPage;
+    window.sendToWhatsApp = sendToWhatsApp;
 
     // ------------------- INIT -------------------
 
@@ -1754,6 +1888,7 @@
       const select = document.getElementById("productSelect");
       const quantityInput = document.getElementById("quantityInput");
       const printsInput = document.getElementById("printsInput");
+      const searchInput = document.getElementById("productSearchInput");
 
       if (select) {
         select.addEventListener("change", () => {
@@ -1768,6 +1903,11 @@
       if (printsInput) {
         printsInput.addEventListener("input", () => {
           if (cartItems.length === 0) calculateSingleTotal();
+        });
+      }
+      if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+          runProductSearch(e.target.value);
         });
       }
     });
